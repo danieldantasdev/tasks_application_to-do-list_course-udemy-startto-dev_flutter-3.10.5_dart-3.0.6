@@ -14,7 +14,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Task> _tasks = [];
-  late Map<String, dynamic> _lastRemoved;
+  late Task _lastRemoved;
   late int _lastRemovedIndex;
 
   final TextEditingController _taskController = TextEditingController();
@@ -50,22 +50,21 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       direction: DismissDirection.endToStart,
-      onDismissed: (dismissDirection) {
+      onDismissed: (DismissDirection dismissDirection) {
         setState(() {
-          _lastRemoved = Map.from(task.toJson());
+          _lastRemoved = task;
           _lastRemovedIndex = index;
           _tasks.removeAt(index);
 
           _taskService.create(_tasks);
 
           final SnackBar snackBar = SnackBar(
-            content: Text("Tarefa (${_lastRemoved["title"]}) removida!"),
+            content: Text("Tarefa (${_lastRemoved.title}) removida!"),
             action: SnackBarAction(
               label: "Desfazer",
               onPressed: () {
                 setState(() {
-                  _tasks.insert(_lastRemovedIndex, _lastRemoved as Task);
-
+                  _tasks.insert(_lastRemovedIndex, _lastRemoved);
                   _taskService.create(_tasks);
                 });
               },
@@ -78,8 +77,8 @@ class _HomePageState extends State<HomePage> {
         });
       },
       child: CheckboxListTile(
-        title: Text(task.title),
-        value: task.ok,
+        title: Text(task.title!),
+        value: task.ok!,
         onChanged: (bool? value) {
           setState(() {
             task.ok = value!;
@@ -87,7 +86,7 @@ class _HomePageState extends State<HomePage> {
           });
         },
         secondary: CircleAvatar(
-          child: Icon(task.ok ? Icons.check : Icons.error),
+          child: Icon(task.ok! ? Icons.check : Icons.error),
         ),
       ),
     );
@@ -98,12 +97,14 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     _taskService.readData().then(
-          (value) => setState(() {
-            _tasks = (json.decode(value) as List<dynamic>)
-                .map((taskJson) => Task.fromJson(taskJson))
-                .toList();
-          }),
-        );
+      (value) {
+        setState(() {
+          _tasks = (json.decode(value) as List<dynamic>)
+              .map((taskJson) => Task.fromJson(taskJson))
+              .toList();
+        });
+      },
+    );
   }
 
   @override
@@ -139,7 +140,7 @@ class _HomePageState extends State<HomePage> {
                   ElevatedButton(
                     onPressed: _addTask,
                     child: const Icon(Icons.add),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -148,7 +149,7 @@ class _HomePageState extends State<HomePage> {
                 itemBuilder: _buildItem,
                 itemCount: _tasks.length,
               ),
-            )
+            ),
           ],
         ),
       ),
