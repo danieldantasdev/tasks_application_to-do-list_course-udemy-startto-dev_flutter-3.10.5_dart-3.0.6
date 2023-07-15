@@ -1,0 +1,1 @@
+export 'task.model.dart';
