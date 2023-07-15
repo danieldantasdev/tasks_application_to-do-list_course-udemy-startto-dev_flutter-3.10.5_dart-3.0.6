@@ -92,6 +92,23 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Future<void> _onRefresh() async {
+    await Future.delayed(const Duration(seconds: 1));
+
+    setState(() {
+      _tasks.sort((a, b) {
+        if (a.ok && !b.ok) {
+          return 1;
+        } else if (!a.ok && b.ok) {
+          return -1;
+        } else {
+          return 0;
+        }
+      });
+      _taskService.create(_tasks);
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -145,9 +162,12 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             Expanded(
-              child: ListView.builder(
-                itemBuilder: _buildItem,
-                itemCount: _tasks.length,
+              child: RefreshIndicator(
+                onRefresh: _onRefresh,
+                child: ListView.builder(
+                  itemBuilder: _buildItem,
+                  itemCount: _tasks.length,
+                ),
               ),
             ),
           ],
